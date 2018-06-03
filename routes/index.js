@@ -46,7 +46,7 @@ board.on("ready", function() {
     client.login(config.token);
 
     client.on('message', async msg => {
-        if (msg.content.startsWith('/join')) {
+        if (msg.content.startsWith(config.prefix+'join')) {
             if (!msg.guild) {
                 return msg.reply('no private service is available in your area at the moment. Please contact a service representative for more details.');
             }
@@ -72,7 +72,7 @@ board.on("ready", function() {
                 message.reply('You need to join a voice channel first!');
             }
         }
-        if(msg.content.startsWith('/leave')) {
+        if(msg.content.startsWith(config.prefix+'leave')) {
             let [command, ...channelName] = msg.content.split(" ");
             let voiceChannel = msg.member.voiceChannel;
             voiceChannel.leave();
