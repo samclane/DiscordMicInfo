@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+const config = require("../config.json");
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -42,7 +43,7 @@ board.on("ready", function() {
             msg.reply('pong');
         }
     });
-    client.login('MjMyMjE5MjY0NDI0MjE0NTI4.DfXVCw.vAFi_UC8VG7in9cohCbTXeHBQYA');
+    client.login(config.token);
 
     client.on('message', async msg => {
         if (msg.content.startsWith('/join')) {
@@ -57,7 +58,6 @@ board.on("ready", function() {
                 }
                 voiceChannel.join().then(conn => {
                     msg.reply('ready!');
-                    const receiver = conn.createReceiver();
                     conn.on('speaking', (user, speaking) => {
                         if (speaking) {
                             console.log('speaking');
