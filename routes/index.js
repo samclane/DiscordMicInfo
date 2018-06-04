@@ -45,12 +45,29 @@ board.on("ready", function() {
     });
     client.login(config.token);
 
+    client.on('voiceStateUpdate', (oldMember, newMember) => {
+        if (newMember.id === config.member_id)
+        {
+            if (newMember.voiceChannel != null)
+            {
+                console.log('inVoiceChannel');
+                matrix.draw(heart);
+            }
+            else
+            {
+                console.log('outVoiceChannel');
+                matrix.clear();
+            }
+        }
+    })
+
+    /*
     client.on('message', async msg => {
         if (msg.content.startsWith(config.prefix+'join')) {
             if (!msg.guild) {
                 return msg.reply('no private service is available in your area at the moment. Please contact a service representative for more details.');
             }
-            if (msg.member.voiceChannel){
+            if (msg.member.voiceChannenl){
                 const voiceChannel = msg.member.voiceChannel;
                 console.log(voiceChannel.id);
                 if (!voiceChannel || voiceChannel.type !== 'voice') {
@@ -78,6 +95,7 @@ board.on("ready", function() {
             voiceChannel.leave();
         }
     });
+    */
 });
 
 
