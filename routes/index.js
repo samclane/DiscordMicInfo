@@ -9,9 +9,14 @@ router.get('/', function (req, res, next) {
 
 module.exports = router;
 
+
+// My Code
 const Discord = require('discord.js');
 const five = require('johnny-five');
+const mic = require('mic');
+const FFT = require('fft.js');
 const board = new five.Board();
+const d3 = require('d3-array');
 board.on("ready", function() {
     let matrix = new five.Led.Matrix({
         pins: {
@@ -46,17 +51,57 @@ board.on("ready", function() {
     client.login(config.token);
 
     client.on('voiceStateUpdate', (oldMember, newMember) => {
+        let micInstance = mic({
+            rate: '16000',
+            channels: '1',
+            debug: true
+        });
+        let micInputStream = micInstance.getAudioStream();
         if (newMember.id === config.member_id)
         {
-            if (newMember.voiceChannel != null)
+            if (newMember.voiceChannel != null) //We're in the channel
             {
                 console.log('inVoiceChannel');
-                matrix.draw(heart);
+                micInputStream.on('data', function (data) {
+                    console.log("Received input stream: " + data.length);
+                    const f = new FFT(Math.pow(2, Math.ceil(Math.log(data.length)/Math.log(2))));
+                    const out = f.createComplexArray();
+                    f.realTransform(out, data);
+                    let width = Math.ceil(out.length / 8);
+                    var col;
+                    var outMatrix = new Array();
+                    for (var i = 0; i < 8; i++)
+                    {
+                        outMatrix[i] = new Array('0','0','0','0','0','0','0','0');
+                    }
+                    for (col = 0; col < 8; col++)
+                    {
+                        var index = 0;
+                        var avg = 0;
+                        for (index = col*width; index < (col+1)*width; index++)
+                        {
+                            avg += out[index];
+                        }
+                        avg = ((avg/width)/255)*8;
+                        for (index=0;index<=avg;index++)
+                        {
+                            outMatrix[col][index] = '1';
+                        }
+                    }
+                    for (i = 0; i < 8; i++)
+                    {
+                        outMatrix[i] = outMatrix[i].join("");
+                    }
+                    matrix.draw(outMatrix);
+                });
+                micInstance.start();
             }
-            else
+            else //We're not in the channel
             {
                 console.log('outVoiceChannel');
                 matrix.clear();
+                console.log('stopping mic');
+                micInstance.stop();
             }
         }
     })
